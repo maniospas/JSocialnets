@@ -1,0 +1,9 @@
+package messages;
+
+public enum MessageType {
+
+	MODEL_PUSH,			// the body will contain the model
+	EGO_NETWORK_QUERY,	// the body will contain the adjacency list of the node who sent the message as a set of node ids
+	EGO_NETWORK_REPLY	// the body will contain the set of nodeids that are in common with the node who sent the original query message
+	
+}
