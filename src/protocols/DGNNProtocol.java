@@ -1,18 +1,15 @@
 package protocols;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import contextualegonetwork.Context;
-import contextualegonetwork.ContextualEgoNetwork;
+import contextualegonetwork.Interaction;
+import managers.ContextualEgoNetworkManager;
 import messages.Message;
-import messages.MessageType;
+import messages.ModelMessageBody;
 import models.Model;
 import peersim.cdsim.CDProtocol;
 import peersim.config.FastConfig;
 import peersim.core.Network;
-import peersim.core.Node;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 
@@ -20,43 +17,54 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 
 //	id number of the protocol
 	public static int dgnnProtocolId;
-	private static Map<String, Integer> idTranslator;
+//	artificial thing to know on which node runs a particular instance of the protocol
+	public static Map<String, Integer> idTranslator;
 //	id string of the protocol
 	public static final String DGNN_PROTOCOL_ID="dgnn";
 //	prefix for getting stuff from the configuration file
 	public static String prefix=null;
+//	a reference to the peersim node
+//	private Node peersimNode;
 	
 //	maybe the CEN? or maybe in another class/package?
-	public ContextualEgoNetwork contextualEgoNetwork;
+	ContextualEgoNetworkManager cenManager;
 //	a reference to the model
 	public Model model;
 	
 	public DGNNProtocol(String prefix) {}
 	
+	/**
+	 * initialize this object with all the modules running on it (the cen manager, and the gnn model at least)
+	 * @return true if something went wrong and the simulation must be stopped, false otherwise
+	 */
 	public boolean initialize() {
-//		initialize the CEN
+		cenManager=new ContextualEgoNetworkManager();
+		if(cenManager.initialize()) return true;
+//		model=new Model();
+//		model.init();
+//		peersimNode=node;
 		return false;
 	}
 	
 	@Override
-	public void nextCycle(Node node, int protocolId) {
-		model.doPeriodicStuff();
+	public void nextCycle(peersim.core.Node node, int protocolId) {
+		model.doPeriodicStuff(1000000);
 	}
 
 	@Override
-	public void processEvent(Node node, int protocolId, Object msg) {
+	public void processEvent(peersim.core.Node node, int protocolId, Object msg) {
 		
 		Message message=(Message) msg;
 //		debugprint(message);
 		switch(message.type){
 		case EGO_NETWORK_QUERY: //can replay right away
-			handleENQ(node, message);
+			cenManager.handleENQ(node, message);
 			break;
 		case EGO_NETWORK_REPLY: //update the CEN
-			handleENR(message);			
+			cenManager.handleENR(message);			
 			break;
 		case MODEL_PUSH: //pass to the learner
-			model.updateFromNeighbour(message);
+			model.newInteraction((Interaction)((ModelMessageBody)message.body).userData, ((ModelMessageBody)message.body));
 			break;
 		default:
 			break;
@@ -65,63 +73,17 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	}
 	
 	/**
-	 * Handling of EGO_NETWORK_QUERY message
-	 */
-	private void handleENQ(Node node, Message message) {
-//		get sender node
-		Context context=contextualEgoNetwork.getCurrentContext();
-		contextualegonetwork.Node sender=null;
-		for(contextualegonetwork.Node neighbour : context.getNodes()) {
-			if(message.senderId.compareTo(neighbour.getId())==0) {
-				sender=neighbour;
-			}
-		}
-		
-//		scan its friend list and check which ones are in common
-		Set<String> commonNeighboursIds=new HashSet<String>();
-		Set<String> alterNeighboursIds=(Set<String>) message.body;
-		for(String alterNeighbourId : alterNeighboursIds) {
-			for(contextualegonetwork.Node egoNeighbour : context.getNodes()) {
-				if(alterNeighbourId.compareTo(egoNeighbour.getId())==0) {
-//					if a common node is found, add the missing edge
-					context.addEdge(sender, egoNeighbour);
-					commonNeighboursIds.add(alterNeighbourId);
-				}
-			}
-		}
-		
-//		when the scan is complete, send back the set of Ids of common neighbours
-		Message reply=new Message();
-		reply.type=MessageType.EGO_NETWORK_REPLY;
-		reply.senderId=contextualEgoNetwork.getEgo().getId();
-		reply.recipientId=message.senderId;
-		reply.body=commonNeighboursIds;
-		sendMessage(reply, node);
-	}
-	
-	/**
-	 * method to handle an EGO_NETWORK_REPLY message
+	 * utility method to broadcast something to all the neighbours of the sender node
 	 * @param message
+	 * @param senderNode
 	 */
-	private void handleENR(Message message) {
-//		get the replying node by its id
-		Context context=contextualEgoNetwork.getCurrentContext();
-		contextualegonetwork.Node sender=null;
-		for(contextualegonetwork.Node neighbour : context.getNodes()) {
-			if(message.senderId.compareTo(neighbour.getId())==0) {
-				sender=neighbour;
-			}
-		}
-		
-//		get the common neighbours ids from the message
-		Set<String> commonNeighboursIds=(Set<String>) message.body;
-		for(String commonNeighbourId : commonNeighboursIds) {
-			for(contextualegonetwork.Node egoNeighbour : context.getNodes()) {
-				if(commonNeighbourId.compareTo(egoNeighbour.getId())==0) {
-//					if a common node is found, add the missing edge
-					context.addEdge(sender, egoNeighbour);
-				}
-			}
+	public void sendToAllAlters(Message message, peersim.core.Node senderNode) {
+//		get all neighbours
+		for(contextualegonetwork.Node neighbour : cenManager.getContextualEgoNetwork().getCurrentContext().getNodes()) {
+//			copy the message and modify the recipient
+			Message copy=message.clone();
+			copy.recipientId=neighbour.getId();
+			sendMessage(copy, senderNode);
 		}
 	}
 	
@@ -130,9 +92,9 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	 * @param message the message to be sent (its fields must be already filled in)
 	 * @param senderNode the peersim node sending the message
 	 */
-	public static void sendMessage(Message message, Node senderNode) {
+	public static void sendMessage(Message message, peersim.core.Node senderNode) {
 		//UnreliableTransport transport = (UnreliableTransport) (Network.prototype).getProtocol(transportid);
-		Node recipient;
+		peersim.core.Node recipient;
 		try{
 			recipient=Network.get(DGNNProtocol.idTranslator.get(message.recipientId));
 		} catch(NullPointerException e){

@@ -17,9 +17,9 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/capitano/eclipse-workspace/libraries/peersim-1.0.5/peersim-doclet.jar"/>
-	<classpathentry kind="lib" path="/home/capitano/eclipse-workspace/libraries/peersim-1.0.5/peersim-1.0.5.jar"/>
-	<classpathentry kind="lib" path="/home/capitano/eclipse-workspace/libraries/peersim-1.0.5/jep-2.3.0.jar"/>
-	<classpathentry kind="lib" path="/home/capitano/eclipse-workspace/libraries/peersim-1.0.5/djep-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/home/capitano/git/distributed-gnn/lib/peersim-doclet.jar"/>
+	<classpathentry kind="lib" path="/home/capitano/git/distributed-gnn/lib/peersim-1.0.5.jar"/>
+	<classpathentry kind="lib" path="/home/capitano/git/distributed-gnn/lib/jep-2.3.0.jar"/>
+	<classpathentry kind="lib" path="/home/capitano/git/distributed-gnn/lib/djep-1.0.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
