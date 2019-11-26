@@ -40,7 +40,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	public boolean initialize() {
 		cenManager = new ContextualEgoNetworkManager();
 		if(cenManager.initialize()) return true;
-//		model=new Model();
+		model = Model.create(cenManager.getContextualEgoNetwork());
 //		model.init();
 //		peersimNode=node;
 		return false;

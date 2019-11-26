@@ -16,6 +16,7 @@ public class ProtocolInitializer implements Control{
 	public ProtocolInitializer(String prefix) {
 		DGNNProtocol.dgnnProtocolId=Configuration.getPid(prefix + "." + DGNNProtocol.DGNN_PROTOCOL_ID);
 		DGNNProtocol.prefix=prefix;
+		contextualegonetwork.Utils.development = false;
 	}
 	
 	@Override
