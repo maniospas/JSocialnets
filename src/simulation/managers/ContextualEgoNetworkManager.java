@@ -1,20 +1,21 @@
-package managers;
+package simulation.managers;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import contextualegonetwork.Context;
 import contextualegonetwork.ContextualEgoNetwork;
-import messages.Message;
-import messages.MessageType;
-import protocols.DGNNProtocol;
+import simulation.messages.Message;
+import simulation.messages.MessageType;
+import simulation.protocols.DGNNProtocol;
 
 public class ContextualEgoNetworkManager {
-
+	private static long numberOfManagers = 0;
 	private ContextualEgoNetwork contextualEgoNetwork;
 	
 	public ContextualEgoNetworkManager() {
-		contextualEgoNetwork=new ContextualEgoNetwork(new contextualegonetwork.Node());
+		numberOfManagers += 1;
+		contextualEgoNetwork=new ContextualEgoNetwork(new contextualegonetwork.Node("node"+numberOfManagers, null));
 	}
 	
 	/**

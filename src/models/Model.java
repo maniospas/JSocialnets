@@ -1,8 +1,8 @@
 package models;
 
 import contextualegonetwork.Interaction;
-import managers.ContextualEgoNetworkManager;
-import messages.ModelMessageBody;
+import simulation.managers.ContextualEgoNetworkManager;
+import simulation.messages.ModelMessageBody;
 
 public abstract class Model {
 	

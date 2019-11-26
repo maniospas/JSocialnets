@@ -1,4 +1,4 @@
-package messages;
+package simulation.messages;
 
 public abstract class ModelMessageBody {
     public Object modelParameters;

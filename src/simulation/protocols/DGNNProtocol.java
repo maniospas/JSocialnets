@@ -1,17 +1,17 @@
-package protocols;
+package simulation.protocols;
 
 import java.util.Map;
 
 import contextualegonetwork.Interaction;
-import managers.ContextualEgoNetworkManager;
-import messages.Message;
-import messages.ModelMessageBody;
 import models.Model;
 import peersim.cdsim.CDProtocol;
 import peersim.config.FastConfig;
 import peersim.core.Network;
 import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
+import simulation.managers.ContextualEgoNetworkManager;
+import simulation.messages.Message;
+import simulation.messages.ModelMessageBody;
 
 public class DGNNProtocol implements EDProtocol, CDProtocol {
 
@@ -38,7 +38,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	 * @return true if something went wrong and the simulation must be stopped, false otherwise
 	 */
 	public boolean initialize() {
-		cenManager=new ContextualEgoNetworkManager();
+		cenManager = new ContextualEgoNetworkManager();
 		if(cenManager.initialize()) return true;
 //		model=new Model();
 //		model.init();

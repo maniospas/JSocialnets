@@ -1,4 +1,4 @@
-package messages;
+package simulation.messages;
 
 public class Message implements Cloneable{
 

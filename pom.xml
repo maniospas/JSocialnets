@@ -13,7 +13,7 @@
   <dependency>
     <groupId>com.github.DistributedSystemsSocialNetworkAnalysis</groupId>
     <artifactId>Contextual-Ego-Network</artifactId>
-    <version>c4d5f7a0cb8ddc959bd3aa111e4c795895c08096</version>
+    <version>0.1-SNAPSHOT</version>
   </dependency>
   </dependencies>
   <build>

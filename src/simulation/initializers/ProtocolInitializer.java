@@ -1,11 +1,11 @@
-package initializers;
+package simulation.initializers;
 
 import java.util.HashMap;
 
 import peersim.config.Configuration;
 import peersim.core.Control;
 import peersim.core.Network;
-import protocols.DGNNProtocol;
+import simulation.protocols.DGNNProtocol;
 
 /**
  * Control to build the social overlay network.
