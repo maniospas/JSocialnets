@@ -2,6 +2,7 @@ package simulation.protocols;
 
 import java.util.Map;
 
+import contextualegonetwork.ContextualEgoNetwork;
 import contextualegonetwork.Interaction;
 import models.Model;
 import peersim.cdsim.CDProtocol;
@@ -64,7 +65,10 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 			cenManager.handleENR(message);			
 			break;
 		case MODEL_PUSH: //pass to the learner
-			model.newInteraction((Interaction)((ModelMessageBody)message.body).userData, ((ModelMessageBody)message.body));
+			ContextualEgoNetwork CEN = cenManager.getContextualEgoNetwork();
+			Node alter = CEN.createOrAddNode(message.globalUserID);
+			Interaction = interaction = CEN.getCurrentContext().getOrAddEdge(alter, CEN.getEgo()).createInteaction("data");
+			model.newInteraction(interaction, ((ModelMessageBody)message.body));
 			break;
 		default:
 			break;
@@ -77,7 +81,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	 * @param message
 	 * @param senderNode
 	 */
-	public void sendToAllAlters(Message message, peersim.core.Node senderNode) {
+	/*public void sendToAllAlters(Message message, peersim.core.Node senderNode) {
 //		get all neighbours
 		for(contextualegonetwork.Node neighbour : cenManager.getContextualEgoNetwork().getCurrentContext().getNodes()) {
 //			copy the message and modify the recipient
@@ -85,7 +89,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 			copy.recipientId=neighbour.getId();
 			sendMessage(copy, senderNode);
 		}
-	}
+	}*/
 	
 	/**
 	 * utility method to send a message

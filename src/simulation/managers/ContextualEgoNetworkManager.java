@@ -15,7 +15,8 @@ public class ContextualEgoNetworkManager {
 	
 	public ContextualEgoNetworkManager() {
 		numberOfManagers += 1;
-		contextualEgoNetwork=new ContextualEgoNetwork(new contextualegonetwork.Node("node"+numberOfManagers, null));
+		contextualEgoNetwork = new ContextualEgoNetwork(new contextualegonetwork.Node("node"+numberOfManagers, null));
+		contextualEgoNetwork.setCurrent(contextualEgoNetwork.createContext("Default context"));
 	}
 	
 	/**
@@ -81,7 +82,7 @@ public class ContextualEgoNetworkManager {
 			}
 		}
 		
-//		get the common neighbours ids from the message
+//		get the common neighbour ids from the message
 		@SuppressWarnings("unchecked")
 		Set<String> commonNeighboursIds=(Set<String>) message.body;
 		for(String commonNeighbourId : commonNeighboursIds) {

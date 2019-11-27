@@ -1,12 +1,16 @@
 package simulation.messages;
 
-public class Message implements Cloneable{
+import java.io.Serializable;
+
+public class Message {
 
 	public MessageType type=MessageType.EGO_NETWORK_QUERY;
-	public Cloneable body=null;
+	public String body=null;//e.g. "like", "talked"
+	public String parameters=null;
 	public String senderId=null;
 	public String recipientId=null;
 	
+	/*
 	@Override
 	public Message clone() {
 		Message copy=new Message();
@@ -15,6 +19,6 @@ public class Message implements Cloneable{
 		copy.senderId=this.senderId;
 		copy.recipientId=this.recipientId;
 		return copy;
-	}
+	}*/
 	
 }
