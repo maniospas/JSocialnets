@@ -1,8 +1,5 @@
 package simulation.managers;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import contextualegonetwork.Context;
 import contextualegonetwork.ContextualEgoNetwork;
 import simulation.messages.Message;
@@ -10,7 +7,7 @@ import simulation.messages.MessageType;
 import simulation.protocols.DGNNProtocol;
 
 public class ContextualEgoNetworkManager {
-	private static long numberOfManagers = 0;
+	private static long numberOfManagers = -1;
 	private ContextualEgoNetwork contextualEgoNetwork;
 	
 	public ContextualEgoNetworkManager() {
@@ -21,7 +18,7 @@ public class ContextualEgoNetworkManager {
 	
 	/**
 	 * initialize this object
-	 * @return true if something went wrong and the simulation must be stopped, false otherwise
+	 * @return true if something went terribly wrong and the simulation must be stopped, false otherwise
 	 */
 	public boolean initialize() {
 //		do initialization stuff, like populate the cen object
@@ -30,6 +27,10 @@ public class ContextualEgoNetworkManager {
 	
 	public ContextualEgoNetwork getContextualEgoNetwork() {
 		return contextualEgoNetwork;
+	}
+	
+	public void addEdgeIfNeeded(String destination) {
+//		TODO: write this method? or find a better way to do it?
 	}
 	
 	/**
@@ -46,15 +47,15 @@ public class ContextualEgoNetworkManager {
 		}
 		
 //		scan its friend list and check which ones are in common
-		HashSet<String> commonNeighboursIds=new HashSet<String>();
-		@SuppressWarnings("unchecked")
-		Set<String> alterNeighboursIds=(Set<String>) message.body;
+		StringBuilder commonNeighboursIds=new StringBuilder();
+		String[] alterNeighboursIds=message.body.split(DGNNProtocol.SEPARATOR);
 		for(String alterNeighbourId : alterNeighboursIds) {
 			for(contextualegonetwork.Node egoNeighbour : context.getNodes()) {
 				if(alterNeighbourId.compareTo(egoNeighbour.getId())==0) {
 //					if a common node is found, add the missing edge
 					context.addEdge(sender, egoNeighbour);
-					commonNeighboursIds.add(alterNeighbourId);
+					commonNeighboursIds.append(alterNeighbourId);
+					commonNeighboursIds.append(DGNNProtocol.SEPARATOR);
 				}
 			}
 		}
@@ -64,7 +65,7 @@ public class ContextualEgoNetworkManager {
 		reply.type=MessageType.EGO_NETWORK_REPLY;
 		reply.senderId=contextualEgoNetwork.getEgo().getId();
 		reply.recipientId=message.senderId;
-		reply.body=commonNeighboursIds;
+		reply.body=commonNeighboursIds.toString();
 		DGNNProtocol.sendMessage(reply, node);
 	}
 	
@@ -83,8 +84,7 @@ public class ContextualEgoNetworkManager {
 		}
 		
 //		get the common neighbour ids from the message
-		@SuppressWarnings("unchecked")
-		Set<String> commonNeighboursIds=(Set<String>) message.body;
+		String[] commonNeighboursIds=message.body.split(DGNNProtocol.SEPARATOR);
 		for(String commonNeighbourId : commonNeighboursIds) {
 			for(contextualegonetwork.Node egoNeighbour : context.getNodes()) {
 				if(commonNeighbourId.compareTo(egoNeighbour.getId())==0) {

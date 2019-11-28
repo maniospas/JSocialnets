@@ -1,6 +1,7 @@
 package simulation.protocols;
 
 import java.util.Map;
+import java.util.Random;
 
 import contextualegonetwork.ContextualEgoNetwork;
 import contextualegonetwork.Interaction;
@@ -12,6 +13,7 @@ import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 import simulation.managers.ContextualEgoNetworkManager;
 import simulation.messages.Message;
+import simulation.messages.MessageType;
 import simulation.messages.ModelMessageBody;
 
 public class DGNNProtocol implements EDProtocol, CDProtocol {
@@ -22,13 +24,14 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	public static Map<String, Integer> idTranslator;
 //	id string of the protocol
 	public static final String DGNN_PROTOCOL_ID="dgnn";
+	public static final String SEPARATOR = "$";
 //	prefix for getting stuff from the configuration file
 	public static String prefix=null;
 //	a reference to the peersim node
 //	private Node peersimNode;
 	
 //	maybe the CEN? or maybe in another class/package?
-	ContextualEgoNetworkManager cenManager;
+	public ContextualEgoNetworkManager cenManager;
 //	a reference to the model
 	public Model model;
 	
@@ -42,13 +45,13 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 		cenManager = new ContextualEgoNetworkManager();
 		if(cenManager.initialize()) return true;
 		model = Model.create(cenManager.getContextualEgoNetwork());
-//		model.init();
 //		peersimNode=node;
 		return false;
 	}
 	
 	@Override
 	public void nextCycle(peersim.core.Node node, int protocolId) {
+//		also let the model do some periodic stuff if needed
 		model.doPeriodicStuff(1000000);
 	}
 
@@ -65,10 +68,13 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 			cenManager.handleENR(message);			
 			break;
 		case MODEL_PUSH: //pass to the learner
-			ContextualEgoNetwork CEN = cenManager.getContextualEgoNetwork();
-			Node alter = CEN.createOrAddNode(message.globalUserID);
-			Interaction = interaction = CEN.getCurrentContext().getOrAddEdge(alter, CEN.getEgo()).createInteaction("data");
-			model.newInteraction(interaction, ((ModelMessageBody)message.body));
+			ContextualEgoNetwork cen = cenManager.getContextualEgoNetwork();
+			contextualegonetwork.Node alter = cenManager.getContextualEgoNetwork().createOrAddNode(message.senderId);
+			Interaction interaction = cen.getCurrentContext().getOrAddEdge(alter, cen.getEgo()).createInteaction(message.body);
+			model.newInteraction(interaction, message.parameters);
+			break;
+		case NEW_INTERACTION: //a new interaction happened!
+			debugprint(message.type, message.senderId, message.recipientId);
 			break;
 		default:
 			break;
@@ -80,6 +86,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	 * utility method to broadcast something to all the neighbours of the sender node
 	 * @param message
 	 * @param senderNode
+	 * @deprecated =D
 	 */
 	/*public void sendToAllAlters(Message message, peersim.core.Node senderNode) {
 //		get all neighbours
@@ -112,6 +119,14 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	@Override
 	public Object clone() {
 		return new DGNNProtocol(prefix);
+	}
+	
+	public static void debugprint(Object... messages){
+		System.out.print("DEBUG|||");
+		for(Object message : messages){
+			System.out.print(" " + message);
+		}
+		System.out.println();
 	}
 
 }
