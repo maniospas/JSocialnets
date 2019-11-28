@@ -2,7 +2,6 @@ package models;
 
 import contextualegonetwork.ContextualEgoNetwork;
 import contextualegonetwork.Interaction;
-import simulation.messages.ModelMessageBody;
 
 public class MajorityModel implements Model {
 	private ContextualEgoNetwork contextualEgoNetwork;

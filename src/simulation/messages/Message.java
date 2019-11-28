@@ -1,7 +1,5 @@
 package simulation.messages;
 
-import java.io.Serializable;
-
 public class Message {
 
 	public MessageType type=MessageType.EGO_NETWORK_QUERY;

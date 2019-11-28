@@ -1,10 +1,7 @@
 package models;
 
-import java.io.Serializable;
-
 import contextualegonetwork.ContextualEgoNetwork;
 import contextualegonetwork.Interaction;
-import simulation.messages.ModelMessageBody;
 
 public abstract interface Model {
 

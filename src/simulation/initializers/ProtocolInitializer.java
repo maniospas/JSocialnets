@@ -26,7 +26,7 @@ public class ProtocolInitializer implements Control{
 		for(int i=0; i<Network.size(); i++) {
 			DGNNProtocol node=(DGNNProtocol)Network.get(i).getProtocol(DGNNProtocol.dgnnProtocolId);
 			node.initialize();
-			DGNNProtocol.idTranslator.put(""+i, i); //TODO: modify with key=node id in the cen
+			DGNNProtocol.idTranslator.put(node.cenManager.getContextualEgoNetwork().getEgo().getId(), i); //key=node id in the cen, value is the position in the simulator array of nodes
 		}
 		return false;
 	}
