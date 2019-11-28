@@ -4,6 +4,7 @@ import java.util.Map;
 
 import contextualegonetwork.ContextualEgoNetwork;
 import contextualegonetwork.Interaction;
+import javafx.scene.Node;
 import models.Model;
 import peersim.cdsim.CDProtocol;
 import peersim.config.FastConfig;
@@ -65,7 +66,6 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 			cenManager.handleENR(message);			
 			break;
 		case MODEL_PUSH: //pass to the learner
-			ContextualEgoNetwork CEN = cenManager.getContextualEgoNetwork();
 			Node alter = CEN.createOrAddNode(message.globalUserID);
 			Interaction = interaction = CEN.getCurrentContext().getOrAddEdge(alter, CEN.getEgo()).createInteaction("data");
 			model.newInteraction(interaction, ((ModelMessageBody)message.body));

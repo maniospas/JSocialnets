@@ -21,13 +21,13 @@ public class MajorityModel implements Model {
 	}
 	@Override
 	public void doPeriodicStuff(long timeTicks) {
-		/*vote = (vote+accumulation)/(accumulationCount+1);
+		vote = (vote+accumulation)/(accumulationCount+1);
 		accumulation = 0;
-		accumulationCount = 1;*/
+		accumulationCount = 1;
 	}
 	@Override
 	public String getMessageModelParameters() {
-		return vote;
+		return ""+vote;
 	}
 	@Override
 	public double evaluation() {
