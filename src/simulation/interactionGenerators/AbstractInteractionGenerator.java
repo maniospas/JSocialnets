@@ -11,7 +11,7 @@ import simulation.protocols.DGNNProtocol;
 
 public abstract class AbstractInteractionGenerator implements Control {
 
-	static final String SEPARATOR = "£";
+	private static final String SEPARATOR = "£";
 
 	@Override
 	public boolean execute() {
@@ -23,12 +23,23 @@ public abstract class AbstractInteractionGenerator implements Control {
 			peersim.core.Node interactionSource=Network.get(DGNNProtocol.idTranslator.get(parts[0]));
 			Message event=new Message();
 			event.type=MessageType.NEW_INTERACTION;
-			event.senderId=parts[0];	//source=source of the interaction
-			event.recipientId=parts[1];	//recipient=destination of the interaction
+			event.senderId=parts[0];	//source of the interaction
+			event.recipientId=parts[1];	//destination of the interaction
+			event.body=parts[3];	//this is the body of the interaction
+			event.parameters=parts[4];//these are the parameters to pass alongside the actual interaction
 //			add the event to the simulator
 			EDSimulator.add(Integer.parseInt(parts[2]), event, interactionSource, DGNNProtocol.dgnnProtocolId);
 		}
 		return false;
+	}
+	
+	public String createInteraction(String senderId, String recipientId, int randomDelay, String body, String parameters) {
+		return senderId
+				+ SEPARATOR + recipientId
+				+ SEPARATOR + randomDelay
+				+ SEPARATOR + body 
+				+ SEPARATOR + parameters;
+		
 	}
 	
 	/**

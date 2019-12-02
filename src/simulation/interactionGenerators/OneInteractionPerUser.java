@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Random;
 
 import peersim.config.Configuration;
+import peersim.config.FastConfig;
 import peersim.core.Network;
+import simulation.protocols.DGNNProtocol;
 
 public class OneInteractionPerUser extends AbstractInteractionGenerator {
 
@@ -23,12 +25,17 @@ public class OneInteractionPerUser extends AbstractInteractionGenerator {
 		for(int i=0; i<Network.size(); i++) {
 //			generate a random interaction between this node and a random node
 			int randomNodeId=rng.nextInt(Network.size());
-			while(randomNodeId==i) {
+			while(randomNodeId==i) 
 				randomNodeId=rng.nextInt(Network.size());
-			}
 			int randomDelay=rng.nextInt(cycleLength);
-//			add it to the batch
-			interactionBatch.add("node" + i + SEPARATOR + "node" + randomNodeId + SEPARATOR + randomDelay);
+			DGNNProtocol sourceProtocol = (DGNNProtocol); //TODO: get protocol of user with id ("node" + i)
+//			add it to the batch (change this to also add the interaction to the source node)]
+			String interactionType = "simulation interaction";
+			interactionBatch.add(createInteraction("node" + i,
+													"node" + randomNodeId,
+													randomDelay,
+													interactionType,
+													sourceProtocol.getMessageBodyAndRegisterInteraction("node" + randomNodeId, interactionType)));
 		}
 		
 		return interactionBatch;

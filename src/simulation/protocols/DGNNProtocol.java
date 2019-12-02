@@ -1,11 +1,11 @@
 package simulation.protocols;
 
 import java.util.Map;
-import java.util.Random;
 
 import contextualegonetwork.ContextualEgoNetwork;
 import contextualegonetwork.Interaction;
-import javafx.scene.Node;
+import contextualegonetwork.Node;
+import contextualegonetwork.Utils;
 import models.Model;
 import peersim.cdsim.CDProtocol;
 import peersim.config.FastConfig;
@@ -14,8 +14,6 @@ import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 import simulation.managers.ContextualEgoNetworkManager;
 import simulation.messages.Message;
-import simulation.messages.MessageType;
-import simulation.messages.ModelMessageBody;
 
 public class DGNNProtocol implements EDProtocol, CDProtocol {
 
@@ -53,34 +51,40 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	@Override
 	public void nextCycle(peersim.core.Node node, int protocolId) {
 //		also let the model do some periodic stuff if needed
-		model.doPeriodicStuff(1000000);
+		model.doPeriodicStuff(Utils.getCurrentTimestamp());
 	}
 
 	@Override
 	public void processEvent(peersim.core.Node node, int protocolId, Object msg) {
-		
 		Message message=(Message) msg;
-//		debugprint(message);
 		switch(message.type){
-		case EGO_NETWORK_QUERY: //can replay right away
-			cenManager.handleENQ(node, message);
-			break;
-		case EGO_NETWORK_REPLY: //update the CEN
-			cenManager.handleENR(message);			
-			break;
-		case MODEL_PUSH: //pass to the learner
-			ContextualEgoNetwork cen = cenManager.getContextualEgoNetwork();
-			contextualegonetwork.Node alter = cenManager.getContextualEgoNetwork().getOrCreateNode(message.senderId, null);
-			Interaction interaction = cen.getCurrentContext().getOrAddEdge(alter, cen.getEgo()).addDetectedInteraction(message.body);
-			model.newInteraction(interaction, message.parameters);
-			break;
-		case NEW_INTERACTION: //a new interaction happened!
-			debugprint(message.type, message.senderId, message.recipientId);
-			break;
-		default:
-			break;
+			case EGO_NETWORK_QUERY: //can replay right away
+				cenManager.handleENQ(node, message);
+				break;
+			case EGO_NETWORK_REPLY: //update the CEN
+				cenManager.handleENR(message);			
+				break;
+			case MODEL_PUSH: //pass to the learner
+				break;
+			case NEW_INTERACTION: //a new interaction happened!
+				ContextualEgoNetwork cen = cenManager.getContextualEgoNetwork();
+				contextualegonetwork.Node alter = cen.getOrCreateNode(message.senderId, null);
+				Interaction interaction = cen.getCurrentContext().getOrAddEdge(alter, cen.getEgo()).addDetectedInteraction(message.body);
+				model.newInteraction(interaction, message.parameters);
+				debugprint(message.type, message.senderId, message.recipientId);
+				break;
+			default:
+				break;
 		}
 
+	}
+
+	public String getMessageBodyAndRegisterInteraction(String alterId, String iteractionType) {
+		ContextualEgoNetwork cen = cenManager.getContextualEgoNetwork();
+		Node alter = cen.getOrCreateNode(alterId, null);
+		Interaction interaction = cen.getCurrentContext().getOrAddEdge(cen.getEgo(), alter).addDetectedInteraction(iteractionType);
+		model.newInteraction(interaction, null);
+		return model.getModelParameters(alter);
 	}
 	
 	/**
