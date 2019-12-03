@@ -28,14 +28,16 @@ public class OneInteractionPerUser extends AbstractInteractionGenerator {
 			while(randomNodeId==i) 
 				randomNodeId=rng.nextInt(Network.size());
 			int randomDelay=rng.nextInt(cycleLength);
-			DGNNProtocol sourceProtocol = (DGNNProtocol); //TODO: get protocol of user with id ("node" + i)
+			DGNNProtocol sourceProtocol = (DGNNProtocol) Network.get(i).getProtocol(DGNNProtocol.dgnnProtocolId);
 //			add it to the batch (change this to also add the interaction to the source node)]
 			String interactionType = "simulation interaction";
 			interactionBatch.add(createInteraction("node" + i,
 													"node" + randomNodeId,
 													randomDelay,
 													interactionType,
-													sourceProtocol.getMessageBodyAndRegisterInteraction("node" + randomNodeId, interactionType)));
+													sourceProtocol.getMessageBodyAndRegisterInteraction("node" + randomNodeId, interactionType))); //I think this should not be happening here! here the interaction is created,
+//																																					but it still has to reach the source node! Maybe this method should be called
+//																																					when the destination reaches the destination of the interaction
 		}
 		
 		return interactionBatch;
