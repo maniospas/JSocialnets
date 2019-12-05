@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 
 import peersim.config.Configuration;
-import peersim.config.FastConfig;
 import peersim.core.Network;
 import simulation.protocols.DGNNProtocol;
 

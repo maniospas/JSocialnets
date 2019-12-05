@@ -14,7 +14,6 @@ import peersim.edsim.EDProtocol;
 import peersim.transport.Transport;
 import simulation.managers.ContextualEgoNetworkManager;
 import simulation.messages.Message;
-import simulation.messages.MessageType;
 
 public class DGNNProtocol implements EDProtocol, CDProtocol {
 
@@ -71,19 +70,20 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 			case NEW_INTERACTION: //a new interaction happened!
 				//update local CEN
 				ContextualEgoNetwork cen = cenManager.getContextualEgoNetwork();
-				contextualegonetwork.Node alter = cen.getOrCreateNode(message.senderId, null);
-				Interaction interaction = cen.getCurrentContext().getOrAddEdge(alter, cen.getEgo()).addDetectedInteraction(message.body);
+				contextualegonetwork.Node senderNode = cen.getOrCreateNode(message.senderId, null);
+				contextualegonetwork.Node recepientNode = cen.getOrCreateNode(message.recipientId, null);
+				Interaction interaction = cen.getCurrentContext().getOrAddEdge(senderNode, recepientNode).addDetectedInteraction(message.body);
 				//let the model update
 				model.newInteraction(interaction, message.parameters);
 				//TODO (not sure who): what if a new edge was created? the cen of all my neighbours must be updated!
 				//push the model and the interaction to the destination of the interaction
-				Message reply=new Message();
+				/*Message reply=new Message();
 				reply.type=MessageType.MODEL_PUSH;
 				reply.senderId=cen.getEgo().getId();
 				reply.recipientId=message.senderId;
 				reply.body=message.body;
-				reply.parameters=model.getModelParameters(alter); //btw, why is a parameter needed here? 
-				DGNNProtocol.sendMessage(reply, node);
+				reply.parameters=model.getModelParameters(interaction); //btw, why is a parameter needed here? 
+				DGNNProtocol.sendMessage(reply, node);*/
 				break;
 			default:
 				break;
@@ -94,9 +94,10 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	public String getMessageBodyAndRegisterInteraction(String alterId, String iteractionType) {
 		ContextualEgoNetwork cen = cenManager.getContextualEgoNetwork();
 		Node alter = cen.getOrCreateNode(alterId, null);
+		if(!cen.getCurrentContext().getNodes().contains(alter))
+			cen.getCurrentContext().addNode(alter);
 		Interaction interaction = cen.getCurrentContext().getOrAddEdge(cen.getEgo(), alter).addDetectedInteraction(iteractionType);
-		model.newInteraction(interaction, null);
-		return model.getModelParameters(alter);
+		return model.getModelParameters(interaction);
 	}
 	
 	/**

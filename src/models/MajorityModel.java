@@ -2,7 +2,6 @@ package models;
 
 import contextualegonetwork.ContextualEgoNetwork;
 import contextualegonetwork.Interaction;
-import contextualegonetwork.Node;
 
 public class MajorityModel implements Model {
 	private ContextualEgoNetwork contextualEgoNetwork;
@@ -17,20 +16,20 @@ public class MajorityModel implements Model {
 	public void newInteraction(Interaction interaction, String neighborModelParameters) {
 		accumulation += Double.parseDouble(neighborModelParameters);
 		accumulationCount += 1;
-		System.out.println("Test");
 	}
 	@Override
 	public void doPeriodicStuff(long atTime) {
 		vote = (vote+accumulation)/(accumulationCount+1);
 		accumulation = 0;
-		accumulationCount = 1;
+		accumulationCount = 0;
+		System.out.println(this.contextualEgoNetwork.getEgo()+"Current vote "+vote);
 	}
 	@Override
 	public double evaluation() {
 		return 0;
 	}
 	@Override
-	public String getModelParameters(Node sendToNode) {
+	public String getModelParameters(Interaction interaction) {
 		return ""+vote;
 	}
 }
