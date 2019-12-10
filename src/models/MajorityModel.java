@@ -22,7 +22,7 @@ public class MajorityModel implements Model {
 		vote = (vote+accumulation)/(accumulationCount+1);
 		accumulation = 0;
 		accumulationCount = 0;
-		System.out.println(this.contextualEgoNetwork.getEgo()+"Current vote "+vote);
+		//System.out.println(this.contextualEgoNetwork.getEgo()+"Current vote "+vote);
 	}
 	@Override
 	public double evaluation() {

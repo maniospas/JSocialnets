@@ -2,6 +2,7 @@ package simulation.managers;
 
 import contextualegonetwork.Context;
 import contextualegonetwork.ContextualEgoNetwork;
+import contextualegonetwork.Edge;
 import simulation.messages.Message;
 import simulation.messages.MessageType;
 import simulation.protocols.DGNNProtocol;
@@ -56,6 +57,13 @@ public class ContextualEgoNetworkManager {
 					context.addEdge(sender, egoNeighbour);
 					commonNeighboursIds.append(alterNeighbourId);
 					commonNeighboursIds.append(DGNNProtocol.SEPARATOR);
+//					also send a message to the common neighbours to notify them					
+					Message update=new Message();
+					update.type=MessageType.EGO_NETWORK_REPLY;
+					update.senderId=contextualEgoNetwork.getEgo().getId();
+					update.recipientId=alterNeighbourId;
+					update.body=message.senderId + DGNNProtocol.SEPARATOR + message.recipientId;
+					DGNNProtocol.sendMessage(update, node);
 				}
 			}
 		}
@@ -67,6 +75,7 @@ public class ContextualEgoNetworkManager {
 		reply.recipientId=message.senderId;
 		reply.body=commonNeighboursIds.toString();
 		DGNNProtocol.sendMessage(reply, node);
+
 	}
 	
 	/**
@@ -93,5 +102,37 @@ public class ContextualEgoNetworkManager {
 				}
 			}
 		}
+	}
+
+	/**
+	 * method to handle an EGO_NETWORK_NEW_EDGE message
+	 * @param message
+	 */
+	public void handleENNE(String sourceId, String destinationId) {
+		Context context=contextualEgoNetwork.getCurrentContext();
+		contextualegonetwork.Node source=contextualEgoNetwork.getOrCreateNode(sourceId, null);
+		contextualegonetwork.Node destination=contextualEgoNetwork.getOrCreateNode(destinationId, null);
+		if(!context.getNodes().contains(source)) context.addNode(source);
+		if(!context.getNodes().contains(destination)) context.addNode(destination);
+		if(context.getEdge(source, destination)==null) context.addEdge(source, destination);
+	}
+	
+	/**
+	 * update the cen, possibly adding new nodes and edges
+	 * @param alterId The id of the node with which the interaction happened
+	 * @param iteractionType the type of the interaction
+	 * @return false if no edges were added, true if some edges were added and therefore an update to the cen of the neighbours is needed.
+	 */
+	public boolean updateCen(String alterId) {
+		boolean modification=false;
+//		create the node or add it to the current context if necessary
+		contextualegonetwork.Node alter = contextualEgoNetwork.getOrCreateNode(alterId, null);
+		if(!contextualEgoNetwork.getCurrentContext().getNodes().contains(alter))
+			contextualEgoNetwork.getCurrentContext().addNode(alter);
+		if(contextualEgoNetwork.getCurrentContext().getEdge(contextualEgoNetwork.getEgo(), alter)==null) {
+			modification=true;
+		}
+		contextualEgoNetwork.getCurrentContext().getOrAddEdge(contextualEgoNetwork.getEgo(), alter);
+		return modification;
 	}
 }
