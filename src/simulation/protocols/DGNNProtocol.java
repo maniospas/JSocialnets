@@ -101,7 +101,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 				}
 //				register the interaction in the cen
 				interaction = cen.getCurrentContext().getEdge(senderNode, recepientNode).addDetectedInteraction(message.body);
-				model.newInteraction(interaction, message.parameters);
+				model.newInteraction(interaction);
 				//push the model and the interaction to the destination of the interaction
 				Message reply=new Message();
 				reply.type=MessageType.MODEL_PUSH;

@@ -13,16 +13,19 @@ public class MajorityModel implements Model {
     	this.contextualEgoNetwork = contextualEgoNetwork;
     }
 	@Override
+	public void newInteraction(Interaction interaction) {
+	}
+	@Override
 	public void newInteraction(Interaction interaction, String neighborModelParameters) {
 		accumulation += Double.parseDouble(neighborModelParameters);
 		accumulationCount += 1;
+		System.out.println(this.contextualEgoNetwork.getEgo()+"Current vote "+vote+" vs "+neighborModelParameters);
 	}
 	@Override
 	public void doPeriodicStuff(long atTime) {
 		vote = (vote+accumulation)/(accumulationCount+1);
 		accumulation = 0;
 		accumulationCount = 0;
-		//System.out.println(this.contextualEgoNetwork.getEgo()+"Current vote "+vote);
 	}
 	@Override
 	public double evaluation() {
@@ -30,6 +33,7 @@ public class MajorityModel implements Model {
 	}
 	@Override
 	public String getModelParameters(Interaction interaction) {
+		System.out.println(""+vote);
 		return ""+vote;
 	}
 }

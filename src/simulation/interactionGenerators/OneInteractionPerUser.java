@@ -33,7 +33,7 @@ public class OneInteractionPerUser extends AbstractInteractionGenerator {
 													"node" + randomNodeId,
 													randomDelay,
 													interactionType,
-													"1"));//sourceProtocol.getMessageBodyAndRegisterInteraction("node" + randomNodeId, interactionType))); //I think this should not be happening here! here the interaction is created,
+													" "));//sourceProtocol.getMessageBodyAndRegisterInteraction("node" + randomNodeId, interactionType))); //I think this should not be happening here! here the interaction is created,
 //																																					but it still has to reach the source node! Maybe this method should be called
 //																																					when the destination reaches the destination of the interaction
 		}
