@@ -17,6 +17,11 @@ public class ContextualEgoNetworkManager {
 		contextualEgoNetwork.setCurrent(contextualEgoNetwork.createContext("Default context"));
 	}
 	
+	public ContextualEgoNetworkManager(String selfDecidedId) {
+		contextualEgoNetwork = new ContextualEgoNetwork(new contextualegonetwork.Node(selfDecidedId, null));
+		contextualEgoNetwork.setCurrent(contextualEgoNetwork.createContext("Default context"));
+	}
+	
 	/**
 	 * initialize this object
 	 * @return true if something went terribly wrong and the simulation must be stopped, false otherwise

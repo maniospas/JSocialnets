@@ -49,6 +49,14 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 		return false;
 	}
 	
+//	TODO:clean the code!
+	public boolean initialize(String selfDecidedId) {
+		cenManager = new ContextualEgoNetworkManager(selfDecidedId);
+		if(cenManager.initialize()) return true;
+		model = Model.create(cenManager.getContextualEgoNetwork());
+		return false;
+	}
+	
 	@Override
 	public void nextCycle(peersim.core.Node node, int protocolId) {
 //		also let the model do some periodic stuff if needed
@@ -63,7 +71,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 				cenManager.handleENQ(node, message);
 				break;
 			case EGO_NETWORK_REPLY: //update the CEN
-				cenManager.handleENR(message);			
+				cenManager.handleENR(message);
 				break;
 			case EGO_NETWORK_NEW_EDGE:
 				String[] parts=message.body.split(SEPARATOR);

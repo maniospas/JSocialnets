@@ -33,10 +33,10 @@ public abstract class AbstractInteractionGenerator implements Control {
 		return false;
 	}
 	
-	public String createInteraction(String senderId, String recipientId, int randomDelay, String body, String parameters) {
+	public String createInteraction(String senderId, String recipientId, long delay, String body, String parameters) {
 		return senderId
 				+ SEPARATOR + recipientId
-				+ SEPARATOR + randomDelay
+				+ SEPARATOR + delay
 				+ SEPARATOR + body 
 				+ SEPARATOR + parameters;
 		
