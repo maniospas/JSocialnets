@@ -19,7 +19,7 @@ public class MajorityModel implements Model {
 	public void newInteraction(Interaction interaction, String neighborModelParameters) {
 		accumulation += Double.parseDouble(neighborModelParameters);
 		accumulationCount += 1;
-		System.out.println(this.contextualEgoNetwork.getEgo()+"Current vote "+vote+" vs "+neighborModelParameters);
+		//System.out.println(this.contextualEgoNetwork.getEgo()+"Current vote "+vote+" vs "+neighborModelParameters);
 	}
 	@Override
 	public void doPeriodicStuff(long atTime) {
@@ -28,12 +28,12 @@ public class MajorityModel implements Model {
 		accumulationCount = 0;
 	}
 	@Override
-	public double evaluation() {
+	public double evaluate(Interaction interaction) {
 		return 0;
 	}
 	@Override
 	public String getModelParameters(Interaction interaction) {
-		System.out.println(""+vote);
+		//System.out.println(""+vote);
 		return ""+vote;
 	}
 }

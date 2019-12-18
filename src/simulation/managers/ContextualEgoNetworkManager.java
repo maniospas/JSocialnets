@@ -2,41 +2,23 @@ package simulation.managers;
 
 import contextualegonetwork.Context;
 import contextualegonetwork.ContextualEgoNetwork;
-import contextualegonetwork.Edge;
 import simulation.messages.Message;
 import simulation.messages.MessageType;
 import simulation.protocols.DGNNProtocol;
 
 public class ContextualEgoNetworkManager {
-	private static long numberOfManagers = -1;
 	private ContextualEgoNetwork contextualEgoNetwork;
+	private DGNNProtocol protocol;
+	private final String stringSeparator = "$";//not necessarily the same as in SimulationTransferProtocol
 	
-	public ContextualEgoNetworkManager() {
-		numberOfManagers += 1;
-		contextualEgoNetwork = new ContextualEgoNetwork(new contextualegonetwork.Node("node"+numberOfManagers, null));
+	public ContextualEgoNetworkManager(String id, DGNNProtocol protocol) {
+		contextualEgoNetwork = ContextualEgoNetwork.createOrLoad(id, null);
 		contextualEgoNetwork.setCurrent(contextualEgoNetwork.createContext("Default context"));
-	}
-	
-	public ContextualEgoNetworkManager(String selfDecidedId) {
-		contextualEgoNetwork = new ContextualEgoNetwork(new contextualegonetwork.Node(selfDecidedId, null));
-		contextualEgoNetwork.setCurrent(contextualEgoNetwork.createContext("Default context"));
-	}
-	
-	/**
-	 * initialize this object
-	 * @return true if something went terribly wrong and the simulation must be stopped, false otherwise
-	 */
-	public boolean initialize() {
-//		do initialization stuff, like populate the cen object
-		return false;
+		this.protocol = protocol;
 	}
 	
 	public ContextualEgoNetwork getContextualEgoNetwork() {
 		return contextualEgoNetwork;
-	}
-	
-	public void addEdgeIfNeeded(String destination) {
-//		TODO: write this method? or find a better way to do it?
 	}
 	
 	/**
@@ -54,21 +36,21 @@ public class ContextualEgoNetworkManager {
 		
 //		scan its friend list and check which ones are in common
 		StringBuilder commonNeighboursIds=new StringBuilder();
-		String[] alterNeighboursIds=message.body.split(DGNNProtocol.SEPARATOR);
+		String[] alterNeighboursIds=message.body.split(stringSeparator);
 		for(String alterNeighbourId : alterNeighboursIds) {
 			for(contextualegonetwork.Node egoNeighbour : context.getNodes()) {
 				if(alterNeighbourId.compareTo(egoNeighbour.getId())==0) {
 //					if a common node is found, add the missing edge
 					context.addEdge(sender, egoNeighbour);
 					commonNeighboursIds.append(alterNeighbourId);
-					commonNeighboursIds.append(DGNNProtocol.SEPARATOR);
+					commonNeighboursIds.append(stringSeparator);
 //					also send a message to the common neighbours to notify them					
 					Message update=new Message();
 					update.type=MessageType.EGO_NETWORK_REPLY;
 					update.senderId=contextualEgoNetwork.getEgo().getId();
 					update.recipientId=alterNeighbourId;
-					update.body=message.senderId + DGNNProtocol.SEPARATOR + message.recipientId;
-					DGNNProtocol.sendMessage(update, node);
+					update.body=message.senderId + stringSeparator + message.recipientId;
+					protocol.sendMessage(update);
 				}
 			}
 		}
@@ -79,7 +61,7 @@ public class ContextualEgoNetworkManager {
 		reply.senderId=contextualEgoNetwork.getEgo().getId();
 		reply.recipientId=message.senderId;
 		reply.body=commonNeighboursIds.toString();
-		DGNNProtocol.sendMessage(reply, node);
+		protocol.sendMessage(reply);
 
 	}
 	
@@ -98,7 +80,7 @@ public class ContextualEgoNetworkManager {
 		}
 		
 //		get the common neighbour ids from the message
-		String[] commonNeighboursIds=message.body.split(DGNNProtocol.SEPARATOR);
+		String[] commonNeighboursIds=message.body.split(stringSeparator);
 		for(String commonNeighbourId : commonNeighboursIds) {
 			for(contextualegonetwork.Node egoNeighbour : context.getNodes()) {
 				if(commonNeighbourId.compareTo(egoNeighbour.getId())==0) {

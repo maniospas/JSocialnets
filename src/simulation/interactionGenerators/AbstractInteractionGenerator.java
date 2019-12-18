@@ -7,7 +7,7 @@ import peersim.core.Network;
 import peersim.edsim.EDSimulator;
 import simulation.messages.Message;
 import simulation.messages.MessageType;
-import simulation.protocols.DGNNProtocol;
+import simulation.server.SimulationTransferProtocol;
 
 public abstract class AbstractInteractionGenerator implements Control {
 
@@ -20,7 +20,7 @@ public abstract class AbstractInteractionGenerator implements Control {
 		for(String interaction : interactions) {
 //			generate an event for each interaction
 			String[] parts=interaction.split(AbstractInteractionGenerator.SEPARATOR);
-			peersim.core.Node interactionSource=Network.get(DGNNProtocol.idTranslator.get(parts[0]));
+			peersim.core.Node interactionSource = Network.get(SimulationTransferProtocol.getServerSideAddress(parts[0]));
 			Message event=new Message();
 			event.type=MessageType.NEW_INTERACTION;
 			event.senderId=parts[0];	//source of the interaction
@@ -28,7 +28,7 @@ public abstract class AbstractInteractionGenerator implements Control {
 			event.body=parts[3];	//this is the body of the interaction
 			event.parameters=parts[4];//these are the parameters to pass alongside the actual interaction
 //			add the event to the simulator
-			EDSimulator.add(Integer.parseInt(parts[2]), event, interactionSource, DGNNProtocol.dgnnProtocolId);
+			EDSimulator.add(Long.parseLong(parts[2]), event, interactionSource, SimulationTransferProtocol.dgnnProtocolId);
 		}
 		return false;
 	}

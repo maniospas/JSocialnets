@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import peersim.config.Configuration;
-import simulation.protocols.DGNNProtocol;
 
 public class CommaSeparatedInteractions extends AbstractInteractionGenerator {
 
@@ -17,6 +16,7 @@ public class CommaSeparatedInteractions extends AbstractInteractionGenerator {
 	private static int cycleLength=0;
 	private long cycleNumber=0;
 	private String lastLine=null;
+	private boolean finished = false;
 	
 	public CommaSeparatedInteractions(String prefix){
 		cycleLength=Configuration.getInt(prefix + ".step");
@@ -26,6 +26,12 @@ public class CommaSeparatedInteractions extends AbstractInteractionGenerator {
 			System.err.println("Must specify a valid input file in the configuration file. The property name is \"input\"");
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public boolean execute() {
+		super.execute();
+		return finished;
 	}
 	
 	@Override
@@ -68,6 +74,8 @@ public class CommaSeparatedInteractions extends AbstractInteractionGenerator {
 //				else add the interaction in the interaction batch
 				interactionBatch.add(createInteraction(source, destination, time-lowerTimeLimit, "generic_interaction", " "));
 			}
+			finished = true;
+			lastLine=null;
 			return interactionBatch;
 		} catch (IOException e) {
 			e.printStackTrace();
