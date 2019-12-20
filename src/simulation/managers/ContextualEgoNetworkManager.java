@@ -25,6 +25,7 @@ public class ContextualEgoNetworkManager {
 	 * Handling of EGO_NETWORK_QUERY message
 	 */
 	public void handleENQ(peersim.core.Node node, Message message) {
+		updateCen(message.senderId);
 //		get sender node
 		Context context=contextualEgoNetwork.getCurrentContext();
 		contextualegonetwork.Node sender=null;
@@ -46,7 +47,7 @@ public class ContextualEgoNetworkManager {
 					commonNeighboursIds.append(stringSeparator);
 //					also send a message to the common neighbours to notify them					
 					Message update=new Message();
-					update.type=MessageType.EGO_NETWORK_REPLY;
+					update.type=MessageType.EGO_NETWORK_NEW_EDGE;
 					update.senderId=contextualEgoNetwork.getEgo().getId();
 					update.recipientId=alterNeighbourId;
 					update.body=message.senderId + stringSeparator + message.recipientId;

@@ -46,6 +46,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 
 	@Override
 	public void processEvent(peersim.core.Node node, int protocolId, Object msg) {
+		Message reply;
 		Message message=(Message) msg;
 		Interaction interaction;
 		Edge edge;
@@ -59,7 +60,7 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 			case EGO_NETWORK_NEW_EDGE:
 				String[] parts=message.body.split(simulationTransferProtocol.getStringSeparator());
 				cenManager.handleENNE(parts[0], parts[1]);
-				// TODO perhaps send an interaction to the model
+				// TODO perhaps send an interaction to the model (of the common alters)
 				break;
 			case MODEL_PUSH: //pass to the learner
 //				the message will contain the source of the interaction, the type of the interaction, and the model of the node generating the interaction
@@ -67,10 +68,20 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 				contextualegonetwork.Node senderNode = cen.getOrCreateNode(message.senderId, null);
 				contextualegonetwork.Node recepientNode = cen.getOrCreateNode(message.recipientId, null);
 //				register the interaction in the cen
-				cenManager.handleENNE(message.senderId, message.recipientId);
+				cenManager.handleENNE(message.senderId, message.recipientId); //TODO: remove comment if necessary, but it should work just fine as it is
 				edge = cen.getCurrentContext().getEdge(senderNode, recepientNode);
 				interaction = edge.addDetectedInteraction(message.body);
 				model.newInteraction(new Model.EdgeInteraction(edge, interaction), message.parameters);
+//				then reply to the sender with the model of this node
+				reply=new Message();
+				reply.type=MessageType.MODEL_REPLY;
+				reply.senderId=message.recipientId;
+				reply.recipientId=message.senderId;
+				reply.parameters=model.getModelParameters(new Model.EdgeInteraction(edge, interaction));
+				sendMessage(reply);
+				break;
+			case MODEL_REPLY: //got a model as a reply for pushing mine
+				model.doSomethingWithNeighbourModel(message.parameters);
 				break;
 			case NEW_INTERACTION: //a new interaction happened!
 				//update local CEN
@@ -99,12 +110,12 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 					evaluator.aggregate(this, model.evaluate(new Model.EdgeInteraction(edge, interaction)));
 				model.newInteraction(new Model.EdgeInteraction(edge, interaction));
 				//push the model and the interaction to the destination of the interaction
-				Message reply=new Message();
+				reply=new Message();
 				reply.type=MessageType.MODEL_PUSH;
 				reply.senderId=cen.getEgo().getId();
 				reply.recipientId=message.recipientId;
 				reply.body=message.body;
-				reply.parameters=model.getModelParameters(new Model.EdgeInteraction(edge, interaction)); //btw, why is a parameter needed here? 
+				reply.parameters=model.getModelParameters(new Model.EdgeInteraction(edge, interaction)); 
 				sendMessage(reply);
 				break;
 			default:
