@@ -3,6 +3,7 @@ package simulation.protocols;
 import java.util.ArrayList;
 
 import contextualegonetwork.ContextualEgoNetwork;
+import contextualegonetwork.Edge;
 import contextualegonetwork.Interaction;
 import contextualegonetwork.Utils;
 import models.Evaluator;
@@ -46,6 +47,8 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 	@Override
 	public void processEvent(peersim.core.Node node, int protocolId, Object msg) {
 		Message message=(Message) msg;
+		Interaction interaction;
+		Edge edge;
 		switch(message.type){
 			case EGO_NETWORK_QUERY: //can reply right away
 				cenManager.handleENQ(node, message);
@@ -65,8 +68,9 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 				contextualegonetwork.Node recepientNode = cen.getOrCreateNode(message.recipientId, null);
 //				register the interaction in the cen
 				cenManager.handleENNE(message.senderId, message.recipientId);
-				Interaction interaction = cen.getCurrentContext().getEdge(senderNode, recepientNode).addDetectedInteraction(message.body);
-				model.newInteraction(interaction, message.parameters);
+				edge = cen.getCurrentContext().getEdge(senderNode, recepientNode);
+				interaction = edge.addDetectedInteraction(message.body);
+				model.newInteraction(new Model.EdgeInteraction(edge, interaction), message.parameters);
 				break;
 			case NEW_INTERACTION: //a new interaction happened!
 				//update local CEN
@@ -89,17 +93,18 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 					sendMessage(contextUpdate);
 				}
 //				register the interaction in the cen
-				interaction = cen.getCurrentContext().getEdge(senderNode, recepientNode).addDetectedInteraction(message.body);
+				edge = cen.getCurrentContext().getEdge(senderNode, recepientNode);
+				interaction = edge.addDetectedInteraction(message.body);
 				if(evaluator!=null)
-					evaluator.aggregate(model.evaluate(interaction));
-				model.newInteraction(interaction);
+					evaluator.aggregate(this, model.evaluate(new Model.EdgeInteraction(edge, interaction)));
+				model.newInteraction(new Model.EdgeInteraction(edge, interaction));
 				//push the model and the interaction to the destination of the interaction
 				Message reply=new Message();
 				reply.type=MessageType.MODEL_PUSH;
 				reply.senderId=cen.getEgo().getId();
 				reply.recipientId=message.recipientId;
 				reply.body=message.body;
-				reply.parameters=model.getModelParameters(interaction); //btw, why is a parameter needed here? 
+				reply.parameters=model.getModelParameters(new Model.EdgeInteraction(edge, interaction)); //btw, why is a parameter needed here? 
 				sendMessage(reply);
 				break;
 			default:

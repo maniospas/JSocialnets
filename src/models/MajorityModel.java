@@ -1,38 +1,26 @@
 package models;
 
-import contextualegonetwork.ContextualEgoNetwork;
-import contextualegonetwork.Interaction;
-
 public class MajorityModel implements Model {
-	private ContextualEgoNetwork contextualEgoNetwork;
 	private double vote = Math.random();
-	private double accumulation = 0;
-	private int accumulationCount = 0;
 	
-    protected MajorityModel(ContextualEgoNetwork contextualEgoNetwork) {
-    	this.contextualEgoNetwork = contextualEgoNetwork;
+    protected MajorityModel() {
     }
 	@Override
-	public void newInteraction(Interaction interaction) {
+	public void newInteraction(EdgeInteraction interaction) {
 	}
 	@Override
-	public void newInteraction(Interaction interaction, String neighborModelParameters) {
-		accumulation += Double.parseDouble(neighborModelParameters);
-		accumulationCount += 1;
-		//System.out.println(this.contextualEgoNetwork.getEgo()+"Current vote "+vote+" vs "+neighborModelParameters);
+	public void newInteraction(EdgeInteraction interaction, String neighborModelParameters) {
+		vote = vote*0.9 + Double.parseDouble(neighborModelParameters)*0.1;
 	}
 	@Override
 	public void doPeriodicStuff(long atTime) {
-		vote = (vote+accumulation)/(accumulationCount+1);
-		accumulation = 0;
-		accumulationCount = 0;
 	}
 	@Override
-	public double evaluate(Interaction interaction) {
-		return 0;
+	public double evaluate(EdgeInteraction interaction) {
+		return Math.abs(vote-0.5);
 	}
 	@Override
-	public String getModelParameters(Interaction interaction) {
+	public String getModelParameters(EdgeInteraction interaction) {
 		//System.out.println(""+vote);
 		return ""+vote;
 	}
