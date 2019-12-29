@@ -71,9 +71,9 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 				cenManager.handleENNE(message.senderId, message.recipientId); //TODO: remove comment if necessary, but it should work just fine as it is
 				edge = cen.getCurrentContext().getEdge(senderNode, recepientNode);
 				interaction = edge.addDetectedInteraction(message.body);
-				model.newInteraction(new Model.EdgeInteraction(edge, interaction), message.parameters);
+				model.newInteraction(new Model.EdgeInteraction(edge, interaction), message.parameters, false);
 //				then reply to the sender with the model of this node
-				reply=new Message();
+				reply = new Message();
 				reply.type=MessageType.MODEL_REPLY;
 				reply.senderId=message.recipientId;
 				reply.recipientId=message.senderId;
@@ -81,7 +81,12 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 				sendMessage(reply);
 				break;
 			case MODEL_REPLY: //got a model as a reply for pushing mine
-				model.doSomethingWithNeighbourModel(message.parameters);
+				/*cen = cenManager.getContextualEgoNetwork();
+				senderNode = cen.getOrCreateNode(message.senderId, null);
+				recepientNode = cen.getOrCreateNode(message.recipientId, null);
+				edge = cen.getCurrentContext().getEdge(recepientNode, senderNode);
+				interaction = edge.addDetectedInteraction(message.body);
+				model.newInteraction(new Model.EdgeInteraction(edge, interaction), message.parameters, true);*/
 				break;
 			case NEW_INTERACTION: //a new interaction happened!
 				//update local CEN

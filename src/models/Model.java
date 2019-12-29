@@ -21,7 +21,7 @@ public abstract interface Model {
 	}
 	
     public abstract void newInteraction(EdgeInteraction interaction);
-    public abstract void newInteraction(EdgeInteraction interaction, String neighborModelParameters);
+    public abstract void newInteraction(EdgeInteraction interaction, String neighborModelParameters, boolean isReply);
     public abstract void doPeriodicStuff(long atTime);
     public abstract String getModelParameters(EdgeInteraction interaction);
     public abstract double evaluate(EdgeInteraction interaction);

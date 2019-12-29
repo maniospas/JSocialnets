@@ -9,7 +9,7 @@ public class MajorityModel implements Model {
 	public void newInteraction(EdgeInteraction interaction) {
 	}
 	@Override
-	public void newInteraction(EdgeInteraction interaction, String neighborModelParameters) {
+	public void newInteraction(EdgeInteraction interaction, String neighborModelParameters, boolean isReply) {
 		vote = vote*0.9 + Double.parseDouble(neighborModelParameters)*0.1;
 	}
 	@Override

@@ -21,7 +21,7 @@ public abstract class EvaluationFrame implements Evaluator {
 	    dataset.addSeries(series);
 	    time = 0;
 	    JFreeChart chart = ChartFactory.createXYLineChart(
-	        "Loss",
+	    	lossName,
 	        "#Interactions",
 	        "Value",
 	        dataset,
