@@ -71,13 +71,13 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 				cenManager.handleENNE(message.senderId, message.recipientId); //TODO: remove comment if necessary, but it should work just fine as it is
 				edge = cen.getCurrentContext().getEdge(senderNode, recepientNode);
 				interaction = edge.addDetectedInteraction(message.body);
-				model.newInteraction(new Model.EdgeInteraction(edge, interaction), message.parameters, false);
+				model.newInteraction(interaction, message.parameters, false);
 //				then reply to the sender with the model of this node
 				reply = new Message();
 				reply.type=MessageType.MODEL_REPLY;
 				reply.senderId=message.recipientId;
 				reply.recipientId=message.senderId;
-				reply.parameters=model.getModelParameters(new Model.EdgeInteraction(edge, interaction));
+				reply.parameters=model.getModelParameters(interaction);
 				sendMessage(reply);
 				break;
 			case MODEL_REPLY: //got a model as a reply for pushing mine
@@ -112,15 +112,15 @@ public class DGNNProtocol implements EDProtocol, CDProtocol {
 				edge = cen.getCurrentContext().getEdge(senderNode, recepientNode);
 				interaction = edge.addDetectedInteraction(message.body);
 				if(evaluator!=null)
-					evaluator.aggregate(this, model.evaluate(new Model.EdgeInteraction(edge, interaction)));
-				model.newInteraction(new Model.EdgeInteraction(edge, interaction));
+					evaluator.aggregate(this, model.evaluate(interaction));
+				model.newInteraction(interaction);
 				//push the model and the interaction to the destination of the interaction
 				reply=new Message();
 				reply.type=MessageType.MODEL_PUSH;
 				reply.senderId=cen.getEgo().getId();
 				reply.recipientId=message.recipientId;
 				reply.body=message.body;
-				reply.parameters=model.getModelParameters(new Model.EdgeInteraction(edge, interaction)); 
+				reply.parameters=model.getModelParameters(interaction); 
 				sendMessage(reply);
 				break;
 			default:

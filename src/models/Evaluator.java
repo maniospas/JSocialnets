@@ -1,10 +1,13 @@
 package models;
 
+import java.util.Map;
+
+
 public interface Evaluator {
-	public void aggregate(Object source, double outcome);
+	public void aggregate(Object source, Map<String, Double> outcome);
 
 	public static Evaluator create() {
-		return new evaluation.LastNodeEvaluation();
+		return new evaluation.EvaluationFrame(evaluation.LastNodeEvaluation.class);
 	}
 	
 }

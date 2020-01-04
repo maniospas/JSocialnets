@@ -19,15 +19,15 @@ import simulation.protocols.DGNNProtocol;
  *
  */
 public class ProtocolInitializer implements Control{
-	private String inputFile=null;
+	private String inputFile = null;
 	
 	public ProtocolInitializer(String prefix) {
-		SimulationTransferProtocol.dgnnProtocolId=Configuration.getPid(prefix + ".dgnn");
+		SimulationTransferProtocol.dgnnProtocolId = Configuration.getPid(prefix + ".dgnn");
 		try {
-			inputFile=Configuration.getString(prefix + ".input");
+			inputFile = Configuration.getString(prefix + ".input");
 		}
 		catch(MissingParameterException e) {
-			inputFile=null;
+			inputFile = null;
 			Utils.error(e);
 		}
 		contextualegonetwork.Utils.development = false;

@@ -1,11 +1,13 @@
 package evaluation;
 
-public class AccumulativeEvaluator extends EvaluationFrame {
+import evaluation.EvaluationFrame.EvaluationMeasure;
+
+public class AccumulativeEvaluator extends EvaluationMeasure {
 	private double accumulation = 0;
 	private double smoothing = 0.99;
 	
 	public AccumulativeEvaluator() {
-		super("Acc", "Loss");
+		super();
 	}
 
 	public double register(Object source, double outcome) {
