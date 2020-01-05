@@ -43,7 +43,7 @@ public class GNN {
 			assertSize(tensor.size());
 			Tensor res = zero();
 			for(int i=0;i<values.length;i++)
-				values[i] += tensor.values[i];
+				res.put(i, get(i)+tensor.get(i));
 			return res;
 		}
 		public Tensor subtract(Tensor tensor) {

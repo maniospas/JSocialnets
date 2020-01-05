@@ -10,16 +10,16 @@ import contextualegonetwork.Edge;
 import contextualegonetwork.Interaction;
 import contextualegonetwork.Node;
 import contextualegonetwork.Utils;
-import models.GNN.Matrix;
-import models.GNN.Relation;
 import models.GNN.Tensor;
 
 public class GNNModel implements Model {
 	private ContextualEgoNetwork contextualEgoNetwork;
-	private static Tensor relation;
+	private Tensor relation;
 	private Tensor egoId;
 	private HashMap<Node, Tensor> alterIds;
 	private static int dims = 10;
+	private Edge lastEdge = null;
+	private Edge prevEdge = null;
 
 	
     protected GNNModel(ContextualEgoNetwork contextualEgoNetwork) {
@@ -28,9 +28,9 @@ public class GNNModel implements Model {
     	egoId.randomize();
     	egoId.normalize();
     	if(relation==null) {
-    		Utils.development = true;
     		relation = new Tensor(dims);
     		relation.setOnes();
+    		relation.normalize();
     	}
     	alterIds = new HashMap<Node, Tensor>();
     }
@@ -45,10 +45,16 @@ public class GNNModel implements Model {
 
 	@Override
 	public synchronized void newInteraction(Interaction interaction, String neighborModelParameters, boolean isReply) {
+		if(!isReply) {
+			prevEdge = lastEdge;
+			lastEdge = interaction.getEdge();
+		}
 		String[] params = neighborModelParameters.split("\\|");
 		Tensor alterId = new Tensor(params[0]);
+		//Tensor alterRelation = new Tensor(params[1]);
 		alterIds.put(interaction.getEdge().getAlter(), alterId);
 		Tensor accum = egoId.zero();
+		Tensor relationAccum = relation.zero();
 		for(Edge edge : contextualEgoNetwork.getCurrentContext().getEdges()) {
 			Tensor otherAlterId = alterIds.get(edge.getAlter());
 			if(otherAlterId==null || edge.getSrc()!=contextualEgoNetwork.getEgo())
@@ -58,12 +64,16 @@ public class GNNModel implements Model {
 			double output = 1./(1+Math.exp(-relation.dot(egoId, otherAlterId)));
 			double partial = (1-target)*output - target*(1-output);
 			partial *= weight;
-			Utils.log(target, output, partial, relation.dot(egoId, otherAlterId));
-			accum.add(relation.multiply(otherAlterId).multiply(partial));
+			accum = accum.add(relation.multiply(otherAlterId).multiply(partial));
+			relationAccum = relationAccum.add(egoId.multiply(otherAlterId).multiply(partial));
 		}
 		//accum.add(egoId.multiply(0.1));
-		egoId.add(accum.multiply(-1));
+		egoId = egoId.add(accum.multiply(-1));
 		egoId.normalize();
+		//relation = relation.add(relationAccum.multiply(-0.01/contextualEgoNetwork.getCurrentContext().getEdges().size()));
+		//System.out.println(relation);
+		double sim = 1;//egoId.dot(alterId)/egoId.norm()/alterId.norm();
+		//relation = relation.multiply(1-sim*0.5).add(alterRelation.multiply(sim*0.5));
 	}
 
 	@Override
@@ -72,7 +82,7 @@ public class GNNModel implements Model {
 
 	@Override
 	public String getModelParameters(Interaction interaction) {
-		return egoId.toString();
+		return egoId.toString()+"|"+relation.toString();
 	}
 
 	@Override
@@ -84,6 +94,8 @@ public class GNNModel implements Model {
 			return result;
 		HashMap<Edge, Double> evaluations = new HashMap<Edge, Double>();
 		for(Edge edge : contextualEgoNetwork.getCurrentContext().getEdges()) {
+			if(edge.getSrc()!=contextualEgoNetwork.getEgo())
+				continue;
 			Tensor alterId = alterIds.get(edge.getAlter());
 			if(alterId!=null)
 				evaluations.put(edge, relation.dot(alterId, egoId));
@@ -91,7 +103,7 @@ public class GNNModel implements Model {
 		double topk = topK(evaluations, interaction.getEdge());
 		result.put("HR@5", topk<=5?1.:0.);
 		result.put("HR@3", topk<=3?1.:0.);
-		//result.put("HR@1", topk<=1?1.:0.);
+		result.put("HR@1", topk<=1?1.:0.);
 		//result.put("Degree", (double) evaluations.size());
 		//result.put("Top Position", topk/evaluations.size());
 		
@@ -101,8 +113,12 @@ public class GNNModel implements Model {
 			if(alterIds.get(edge.getAlter())!=null)
 				evaluations.put(edge, Math.random());
 		topk = topK(evaluations, interaction.getEdge());
-		result.put("Random HR@5", topk<=5?1.:0.);
+		//result.put("Random HR@5", topk<=5?1.:0.);
 		result.put("Random HR@3", topk<=3?1.:0.);
+		
+
+		if(lastEdge!=null)
+			result.put("Last edge", lastEdge==prevEdge?1.:0.);
 		//result.put("parameter norm", dot(egoParameters, egoParameters));
 		//result.put("Random Top Position", topk/evaluations.size());
 		
