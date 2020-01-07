@@ -24,6 +24,8 @@ public class GNN {
 				put(i, Math.random());
 		}
 		public void put(int pos, double value) {
+			if(Double.isNaN(value))
+				throw new RuntimeException("Cannot accept NaN");
 			values[pos] = value;
 		}
 		public void putAdd(int pos, double value) {

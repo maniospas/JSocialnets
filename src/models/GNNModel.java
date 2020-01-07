@@ -20,7 +20,7 @@ public class GNNModel implements Model {
 	private static int dims = 10;
 	private Edge lastEdge = null;
 	private Edge prevEdge = null;
-
+	private double lastSimilarity = 0;
 	
     protected GNNModel(ContextualEgoNetwork contextualEgoNetwork) {
     	this.contextualEgoNetwork = contextualEgoNetwork;
@@ -35,8 +35,12 @@ public class GNNModel implements Model {
     	alterIds = new HashMap<Node, Tensor>();
     }
 
-	private static double getVotingStrength(Interaction interaction) {
-		return 0;
+	private double getVotingStrength(Edge edge, Interaction current) {
+		if(edge.getInteractions().size()==0)
+			return 0;
+		if(edge.getAlter()==current.getEdge().getAlter())
+			return contextualEgoNetwork.getCurrentContext().getEdges().size();
+		return 1;
 	}
 
 	@Override
@@ -55,12 +59,16 @@ public class GNNModel implements Model {
 		alterIds.put(interaction.getEdge().getAlter(), alterId);
 		Tensor accum = egoId.zero();
 		Tensor relationAccum = relation.zero();
+		int count = 0;
 		for(Edge edge : contextualEgoNetwork.getCurrentContext().getEdges()) {
 			Tensor otherAlterId = alterIds.get(edge.getAlter());
 			if(otherAlterId==null || edge.getSrc()!=contextualEgoNetwork.getEgo())
 				continue;
+			double weight = getVotingStrength(edge, interaction);
+			if(weight==0)
+				continue;
+			count++;
 			double target = otherAlterId==alterId?1:0;
-			double weight = target==1?contextualEgoNetwork.getCurrentContext().getEdges().size():1;
 			double output = 1./(1+Math.exp(-relation.dot(egoId, otherAlterId)));
 			double partial = (1-target)*output - target*(1-output);
 			partial *= weight;
@@ -68,9 +76,11 @@ public class GNNModel implements Model {
 			relationAccum = relationAccum.add(egoId.multiply(otherAlterId).multiply(partial));
 		}
 		//accum.add(egoId.multiply(0.1));
+		if(count>1)
+			lastSimilarity = egoId.dot(accum.multiply(-1))/accum.norm();
 		egoId = egoId.add(accum.multiply(-1));
 		egoId.normalize();
-		//relation = relation.add(relationAccum.multiply(-0.01/contextualEgoNetwork.getCurrentContext().getEdges().size()));
+		//relation = relation.add(relationAccum.multiply(-0.1/contextualEgoNetwork.getCurrentContext().getEdges().size()));
 		//System.out.println(relation);
 		double sim = 1;//egoId.dot(alterId)/egoId.norm()/alterId.norm();
 		//relation = relation.multiply(1-sim*0.5).add(alterRelation.multiply(sim*0.5));
@@ -88,7 +98,7 @@ public class GNNModel implements Model {
 	@Override
 	public Map<String, Double> evaluate(Interaction interaction) {
 		Map<String, Double> result =  new LinkedHashMap<String, Double>();
-		if(interaction.getEdge().getInteractions().size()<=1)
+		if(interaction.getEdge().getInteractions().size()<=1)//>1 keeps only the next friendship predictions, <=1 keeps the prediction of next interaction among friends
 			return result;
 		if(!alterIds.containsKey(interaction.getEdge().getAlter()) || interaction.getEdge().getSrc()!=contextualEgoNetwork.getEgo())
 			return result;
@@ -114,13 +124,14 @@ public class GNNModel implements Model {
 				evaluations.put(edge, Math.random());
 		topk = topK(evaluations, interaction.getEdge());
 		//result.put("Random HR@5", topk<=5?1.:0.);
-		result.put("Random HR@3", topk<=3?1.:0.);
-		
+		result.put("Random HR@1", topk<=1?1.:0.);
 
 		if(lastEdge!=null)
-			result.put("Last edge", lastEdge==prevEdge?1.:0.);
+			result.put("Last interactions HR@1", lastEdge==prevEdge?1.:0.);
 		//result.put("parameter norm", dot(egoParameters, egoParameters));
 		//result.put("Random Top Position", topk/evaluations.size());
+		
+		result.put("Last similarity", lastSimilarity);
 		
 		
 		return result;
