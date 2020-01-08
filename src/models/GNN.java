@@ -100,6 +100,14 @@ public class GNN {
 				res.append(",").append(get(i));
 			return res.toString();
 		}
+		public Tensor normalized() {
+			double norm = norm();
+			Tensor res = zero();
+			if(norm!=0)
+				for(int i=0;i<values.length;i++)
+					res.put(i, get(i)/norm);
+			return res;
+		}
 		public void normalize() {
 			double norm = norm();
 			if(norm!=0)
