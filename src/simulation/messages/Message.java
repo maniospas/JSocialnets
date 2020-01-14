@@ -19,4 +19,9 @@ public class Message {
 		return copy;
 	}*/
 	
+	@Override
+	public String toString() {
+		return ""+senderId+" -> "+recipientId;
+	}
+	
 }

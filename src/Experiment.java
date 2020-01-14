@@ -23,10 +23,15 @@ public class Experiment {
 			HashSet<String> nodes = new HashSet<String>();
 			BufferedReader edgeReader = new BufferedReader(new FileReader(new File(edgePath)));
 			String line = null;
+			String lastTime = "0";
+			String firstTime = "";
 			while((line=edgeReader.readLine())!=null) {
 				String[] splt = line.split("\\,");
 				nodes.add(splt[0]);
 				nodes.add(splt[1]);
+				lastTime = splt[2];
+				if(firstTime.isEmpty())
+					firstTime = splt[2];
 			}
 			edgeReader.close();
 			BufferedWriter nodeWritter = new BufferedWriter(new FileWriter(new File(nodePath)));
@@ -42,6 +47,12 @@ public class Experiment {
 			cfgWritter.write("init.4setupper.input "+nodePath);
 			cfgWritter.newLine();
 			cfgWritter.write("control.1interactiongenerator.input "+edgePath);
+			cfgWritter.newLine();
+			cfgWritter.write("CYCLE "+60*60*24);
+			cfgWritter.newLine();
+			cfgWritter.write("START "+firstTime);
+			cfgWritter.newLine();
+			cfgWritter.write("CYCLES "+(Long.parseLong(lastTime)/60/60/24+1));
 			cfgWritter.newLine();
 			cfgWritter.newLine();
 			BufferedReader cfgReader = new BufferedReader(new FileReader(new File("run.cfg.prototype")));

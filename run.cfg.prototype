@@ -3,9 +3,6 @@
 ##### GLOBAL VARIABLES =====
 K 20		#avg degree of nodes
 
-CYCLES 9252	#number of cycles
-CYCLE 1000000 #cycle length
-
 MINDELAY  0
 MAXDELAY  0
 DROP 0
@@ -65,6 +62,7 @@ init.4setupper.dgnn 4dgnn
 
 control.1interactiongenerator simulation.interactionGenerators.CommaSeparatedInteractions
 control.1interactiongenerator.step CYCLE
+control.1interactiongenerator.start START
 
 ##### OBSERVERS =====
 

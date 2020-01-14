@@ -13,13 +13,15 @@ import peersim.config.Configuration;
 public class CommaSeparatedInteractions extends AbstractInteractionGenerator {
 
 	BufferedReader input;
-	private static int cycleLength=0;
+	private static long cycleLength=0;
 	private long cycleNumber=0;
+	private long firstCycleStart=0;
 	private String lastLine=null;
 	private boolean finished = false;
 	
 	public CommaSeparatedInteractions(String prefix){
-		cycleLength=Configuration.getInt(prefix + ".step");
+		cycleLength=Configuration.getLong(prefix + ".step");
+		firstCycleStart=Configuration.getLong(prefix + ".start");
 		try {
 			input=new BufferedReader(new FileReader(new File(Configuration.getString(prefix + ".input"))));
 		} catch (FileNotFoundException e) {
@@ -36,9 +38,9 @@ public class CommaSeparatedInteractions extends AbstractInteractionGenerator {
 	
 	@Override
 	protected List<String> nextInteractionBatch() {
-		long lowerTimeLimit=cycleNumber*cycleLength;
+		long lowerTimeLimit=firstCycleStart+cycleNumber*cycleLength;
 		cycleNumber++;
-		long upperTimeLimit=(cycleNumber)*cycleLength;
+		long upperTimeLimit=firstCycleStart+(cycleNumber)*cycleLength;
 		LinkedList<String> interactionBatch=new LinkedList<String>();
 		String line;
 //		start reading lines
@@ -74,8 +76,8 @@ public class CommaSeparatedInteractions extends AbstractInteractionGenerator {
 //				else add the interaction in the interaction batch
 				interactionBatch.add(createInteraction(source, destination, time-lowerTimeLimit, "generic_interaction", " "));
 			}
-			finished = true;
 			lastLine=null;
+			finished = true;
 			return interactionBatch;
 		} catch (IOException e) {
 			e.printStackTrace();

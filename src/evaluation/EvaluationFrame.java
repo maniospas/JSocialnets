@@ -73,7 +73,9 @@ public class EvaluationFrame implements Evaluator {
 				dataset.addSeries(series);
 				updatePlotSeries = true;
 			}
-			series.add(time, register(seriesName, source, outcome.get(seriesName)));
+			double value = register(seriesName, source, outcome.get(seriesName));
+			series.add(time, value);
+			//System.out.println(seriesName+" "+value);
 		}
 		if(updatePlotSeries && frame!=null) {
 		    JFreeChart chart = ChartFactory.createXYLineChart(
