@@ -40,10 +40,9 @@ public class GNNModel implements Model {
 	private double getVotingStrength(Edge edge, Interaction current) {
 		if(edge.getInteractions().size()==0)
 			return 0;
-		double timeWeight = edge.getInteractions().size();
 		if(current!=null && edge.getAlter()==current.getEdge().getAlter())
-			return contextualEgoNetwork.getCurrentContext().getEdges().size()*timeWeight;
-		return 1*timeWeight*0.1;
+			return 1;
+		return 0;
 	}
 
 	@Override
@@ -81,21 +80,15 @@ public class GNNModel implements Model {
 				double weight = getVotingStrength(edge, interaction);
 				if(weight==0)
 					continue;
-				//double target = otherAlterId==alterId?1.:0;
-				/*if(target==0)
-					otherAlterId = alterNegativeIds.get(edge.getAlter());
-				accum = accum.add(derivative(otherAlterId, target, weight));*/
 				accum = accum.add(derivative(otherAlterId, 1, weight));
 				otherAlterId = alterNegativeIds.get(edge.getAlter());
-				accum = accum.add(derivative(otherAlterId, 0, weight));
-				
-				//relationAccum = relationAccum.add(egoId.multiply(otherAlterId).multiply(partial));
+				//accum = accum.add(derivative(otherAlterId, 0, weight));
 			}
 			//accum.add(egoId.multiply(0.1));
 		//	if(count>1)
 			//	lastSimilarity = egoId.dot(accum.multiply(-1))/accum.norm();
 			Tensor prevEgo = egoId;
-			egoId = egoId.add(accum.multiply(-0.1));
+			egoId = egoId.add(egoId.add(accum.multiply(-1)).normalized());
 			egoId.normalize();
 			if(prevEgo.subtract(egoId).norm()<0.001)
 				break;
@@ -116,14 +109,14 @@ public class GNNModel implements Model {
 		Tensor negative = egoId.zero();
 		double count = 0;
 		for(Edge edge : contextualEgoNetwork.getCurrentContext().getEdges()) {
-			double weight = getVotingStrength(edge, null);
+			double weight = 1;
 			if(edge.getSrc()!=interaction.getEdge().getAlter() && edge.getSrc()!=contextualEgoNetwork.getEgo() && weight!=0 && alterIds.containsKey(edge.getAlter())) {
-				negative.add(alterIds.get(edge.getAlter()).multiply(weight));
+				negative = negative.add(alterIds.get(edge.getAlter()).multiply(weight));
 				count += weight;
 			}
 		}
 		if(count!=0) 
-			negative.multiply(1./count);
+			negative = negative.multiply(1./count);
 		//negative.normalize();
 		return egoId.toString()+"|"+relation.toString()+"|"+negative.toString();
 	}
